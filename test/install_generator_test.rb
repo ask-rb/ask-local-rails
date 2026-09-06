@@ -28,7 +28,7 @@ class InstallGeneratorTest < Minitest::Test
   def run_generator
     AskLocal::Generators::InstallGenerator.new([], { tld: "localhost" },
       destination_root: @dir).tap do |gen|
-      %w[create_initializer patch_development_hosts patch_action_cable
+      %w[create_initializer patch_action_cable
         create_local_config].each { |step| gen.send(step) }
     end
   end
@@ -57,15 +57,17 @@ class InstallGeneratorTest < Minitest::Test
     assert_equal first, File.read(File.join(@dir, "config", "local.yml"))
   end
 
-  def test_injects_hosts_and_cable_origins
+  def test_injects_cable_origins_only
     quiet_io { run_generator }
     dev = File.read(File.join(@dir, "config", "environments", "development.rb"))
-    assert_includes dev, "config.hosts.concat(Ask::Local::Rails.host_patterns"
     assert_includes dev, "allowed_request_origins.concat"
+    refute_includes dev, "config.hosts.concat",
+      "hosts patch is obsolete — RAILS_DEVELOPMENT_HOSTS handles it"
     # Idempotent: second run does not duplicate.
     quiet_io { run_generator }
     dev2 = File.read(File.join(@dir, "config", "environments", "development.rb"))
-    assert_equal dev.scan("host_patterns").length, dev2.scan("host_patterns").length
+    assert_equal dev.scan("allowed_request_origins").length,
+      dev2.scan("allowed_request_origins").length
   end
 
   def quiet_io

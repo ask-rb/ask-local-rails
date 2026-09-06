@@ -7,28 +7,13 @@ module AskLocal
     class InstallGenerator < ::Rails::Generators::Base
       source_root File.expand_path("templates", __dir__)
 
-      desc "Wires a Rails app into ask-local: hosts, Cable origins, Procfile $PORT, initializer"
+      desc "Wires a Rails app into ask-local: Cable origins, initializer, config/local.yml"
 
       class_option :tld, type: :string, default: "localhost",
         desc: "TLD ask-local serves this app under"
 
       def create_initializer
         template "initializer.rb", "config/initializers/ask_local.rb"
-      end
-
-      def patch_development_hosts
-        tld = options[:tld]
-        sentinel = "Ask::Local::Rails.host_patterns"
-        path = app_path("config/environments/development.rb")
-        return unless File.file?(path)
-
-        content = File.read(path)
-        return if content.include?(sentinel)
-
-        inject_into_file path,
-          "\n  # ask-local: allow stable .#{tld} URLs (https://<app>.#{tld}).\n" \
-          "  config.hosts.concat(Ask::Local::Rails.host_patterns(tlds: [#{tld.dump}]))\n",
-          after: "Rails.application.configure do\n"
       end
 
       def patch_action_cable
