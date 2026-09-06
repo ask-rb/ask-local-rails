@@ -1,3 +1,9 @@
+> **DEPRECATED — no longer needed.** ask-local core now injects
+> `RAILS_DEVELOPMENT_HOSTS` per process, so Rails apps boot behind ask-local
+> with zero config. The remaining Rails-specific bits (Action Cable origins,
+> `Ask::Local::Rails.url` helper) are optional conveniences; kept here for
+> reference only. No further development.
+
 # ask-local-rails
 
 [![Gem Version](https://badge.fury.io/rb/ask-local-rails.svg)](https://badge.fury.io/rb/ask-local-rails)
