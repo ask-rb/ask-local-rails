@@ -9,7 +9,7 @@
 > - `Ask::Local::Rails.url` was only a wrapper around `ENV["ASK_LOCAL_URL"]`,
 >   which ask-local injects into every process.
 >
-> Archived at `ask-deprecated/ask-local-rails` for history. No further
+> Archived at `deprecated/ask-local-rails` for history. No further
 > development. Remove this gem from any Gemfile.
 
 # ask-local-rails
