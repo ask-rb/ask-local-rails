@@ -1,8 +1,16 @@
-> **DEPRECATED — no longer needed.** ask-local core now injects
-> `RAILS_DEVELOPMENT_HOSTS` per process, so Rails apps boot behind ask-local
-> with zero config. The remaining Rails-specific bits (Action Cable origins,
-> `Ask::Local::Rails.url` helper) are optional conveniences; kept here for
-> reference only. No further development.
+> **DEPRECATED — fully superseded, nothing needed from this gem.**
+>
+> - ask-local core injects `RAILS_DEVELOPMENT_HOSTS` per process, so Rails
+>   apps boot behind ask-local with zero config — no hosts patch needed.
+> - Action Cable works by default behind ask-local: Rails 7+
+>   `allow_same_origin_as_host` (default true) accepts the connection when
+>   the browser's Origin matches the proxied Host — no origins patch needed.
+> - `ask-local init` already generates `config/local.yml` — no generator needed.
+> - `Ask::Local::Rails.url` was only a wrapper around `ENV["ASK_LOCAL_URL"]`,
+>   which ask-local injects into every process.
+>
+> Archived at `ask-deprecated/ask-local-rails` for history. No further
+> development. Remove this gem from any Gemfile.
 
 # ask-local-rails
 
