@@ -47,21 +47,30 @@ module AskLocal
           after: "Rails.application.configure do\n"
       end
 
-      def rewrite_procfile_ports
-        %w[Procfile.dev Procfile].each do |file|
-          path = app_path(file)
-          next unless File.file?(path)
+      # Emit config/local.yml — the mandatory Kamal-style config.
+      # web process boots the Rails app through puma on $PORT so
+      # ask-local can route to it. Only writes when absent.
+      def create_local_config
+        path = app_path("config/local.yml")
+        return if File.file?(path)
 
-          Ask::Local::Rails::ProcfileRewrite.rewrite(path) do |status, message|
-            say_status status, message, status == :rewrite ? :green : :yellow
-          end
-        end
+        @service = app_service_name
+        @tld = options[:tld]
+        template "local.yml", "config/local.yml"
       end
 
-      def create_ask_local_config
-        return if File.file?(app_path("ask-local.json"))
+      # Derive the service name from the app module when possible.
+      def app_service_name
+        return File.basename(destination_root).downcase.gsub(/[^a-z0-9-]/, "-") unless defined?(::Rails::Application)
 
-        create_file "ask-local.json", "{}\n"
+        app_const = ::Rails.application.class
+        if app_const.respond_to?(:module_parent_name) && app_const.module_parent_name
+          app_const.module_parent_name.underscore.dasherize
+        else
+          File.basename(destination_root).downcase.gsub(/[^a-z0-9-]/, "-")
+        end
+      rescue StandardError
+        File.basename(destination_root).downcase.gsub(/[^a-z0-9-]/, "-")
       end
 
       private

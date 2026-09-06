@@ -1,0 +1,20 @@
+# config/local.yml — ask-local configuration (Kamal-style).
+# This is the only source of truth. Run `ask-local` to boot everything.
+# Overlay variants with config/local.<variant>.yml.
+
+service: <%= @service %>
+
+proxy:
+  tld: <%= @tld %>
+
+processes:
+  web:
+    cmd: bundle exec puma -b tcp://127.0.0.1:$PORT config.ru
+    proxy: true
+  # worker:                      # uncomment to run a background worker
+  #   cmd: bundle exec sidekiq
+  #   proxy: false
+
+env:
+  clear:
+    RAILS_ENV: development

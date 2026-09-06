@@ -29,14 +29,32 @@ class InstallGeneratorTest < Minitest::Test
     AskLocal::Generators::InstallGenerator.new([], { tld: "localhost" },
       destination_root: @dir).tap do |gen|
       %w[create_initializer patch_development_hosts patch_action_cable
-        rewrite_procfile_ports create_ask_local_config].each { |step| gen.send(step) }
+        create_local_config].each { |step| gen.send(step) }
     end
   end
 
-  def test_creates_initializer_and_config
+  def test_creates_initializer_and_local_config
     quiet_io { run_generator }
     assert File.file?(File.join(@dir, "config", "initializers", "ask_local.rb"))
-    assert File.file?(File.join(@dir, "ask-local.json"))
+    assert File.file?(File.join(@dir, "config", "local.yml"))
+    refute File.file?(File.join(@dir, "ask-local.json")),
+      "old ask-local.json must not be created"
+  end
+
+  def test_local_config_has_service_and_web_process
+    quiet_io { run_generator }
+    content = File.read(File.join(@dir, "config", "local.yml"))
+    assert_includes content, "service:"
+    assert_includes content, "web:"
+    assert_includes content, "puma -b tcp://127.0.0.1:$PORT"
+    assert_includes content, "proxy: true"
+  end
+
+  def test_local_config_idempotent
+    quiet_io { run_generator }
+    first = File.read(File.join(@dir, "config", "local.yml"))
+    quiet_io { run_generator }
+    assert_equal first, File.read(File.join(@dir, "config", "local.yml"))
   end
 
   def test_injects_hosts_and_cable_origins
@@ -48,13 +66,6 @@ class InstallGeneratorTest < Minitest::Test
     quiet_io { run_generator }
     dev2 = File.read(File.join(@dir, "config", "environments", "development.rb"))
     assert_equal dev.scan("host_patterns").length, dev2.scan("host_patterns").length
-  end
-
-  def test_rewrites_procfile_ports
-    quiet_io { run_generator }
-    procfile = File.read(File.join(@dir, "Procfile.dev"))
-    assert_includes procfile, "web: bin/rails server -p $PORT"
-    assert_includes procfile, "worker: bundle exec sidekiq"
   end
 
   def quiet_io
