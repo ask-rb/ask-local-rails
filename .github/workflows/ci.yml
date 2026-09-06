@@ -18,7 +18,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: ask-rb/ask-local
-          ref: main
+          ref: master
           path: ask-local
       - uses: ruby/setup-ruby@v1
         with:
